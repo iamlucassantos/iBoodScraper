@@ -17,6 +17,7 @@ class HuntDeals(Ibood):
         super().__init__(url)
 
     def get_product(self):
+        """Returns a dictionary with all information about a product"""
         html = self.get_html()
         for script in html.find_all('script'):
             pattern = re.compile("product.push\(\s+(\{[\s\S]*),\s+\);\s+return product;")
@@ -33,7 +34,7 @@ class HuntDeals(Ibood):
         return product
 
     def find_product_match(self, wishlist_file=None):
-
+        """If a match is found with the wishlist, a notification is created"""
         wish_list = WishList(wishlist_file).items
 
         product = self.get_product()
@@ -50,19 +51,23 @@ class HuntDeals(Ibood):
         return product
 
     def add_to_history(self, product):
+        """ Adds all products to a history csv file"""
 
         with open('products_history.csv', 'a') as csvfile:
             fieldnames = ['productID', 'productName', 'offerName', 'price', 'dealStartDateTime', 'dealEndDateTime']
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             with open('products_history.csv', 'r') as f:
-
-                if sum(1 for _ in f) == 0:
-                    writer.writeheader()
-                f.seek(0)
                 reader = csv.DictReader(f)
+
+                if sum(1 for _ in f) == 0:  # Checks if file is empty
+                    writer.writeheader()
+
+                f.seek(0) # Returns to top of file
+
+
                 APPEND = True
-                for line in reader:
+                for line in reader: # Only appends if product not in the csv file yet
                     if line['productID'] == product['productID']:
                         APPEND = False
                         break
