@@ -24,10 +24,10 @@ class HuntDeals(Ibood):
                 data = pattern.search(json_data).group(1)
                 for line in data.splitlines():
                     if ':' in line:
-                        category, value, *_ = line.strip().split(':')
-                        if value_strip:=re.search("'(.*?)'", value) :
-                            value = value_strip.group(1)
-                            product[category] = value
+                        results = re.search("(\w+):\ '(.*?)'", line)
+                        if results:
+                            product[results.group(1)] = results.group(2)
+
         return product
 
     def find_product_match(self, wishlist_file=None):
@@ -41,7 +41,7 @@ class HuntDeals(Ibood):
                 print('Found')
 
                 notification = Notify()
-                message = f"Price: {product['price']} ({product['discount']}%)"
+                message = f"Price: {product['price']} ({product['discount']}% )"
                 notification.title = product['productName']
                 notification.message = message
 
@@ -50,9 +50,11 @@ class HuntDeals(Ibood):
 
 
 def main():
-    a =HuntDeals()
-    a.find_product_match('wishlist.txt')
-
+    RUNNING = True
+    # while RUNNING is True:
+    deal = HuntDeals()
+    deal.find_product_match('wishlist.txt')
+        # sleep
 
 
 if __name__ == "__main__":
