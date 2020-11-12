@@ -7,7 +7,7 @@ Created on 12/11/2020
 from ibooddeals.helpers import WishList, Ibood
 import re
 from notifypy import Notify
-
+import time
 
 class HuntDeals(Ibood):
 
@@ -35,13 +35,11 @@ class HuntDeals(Ibood):
         wish_list = WishList(wishlist_file).items
 
         product = self.get_product()
-        print(product)
         for item in wish_list:
             if item.lower() in product['productName'].lower() or item.lower() in product['offerName'].lower():
-                print('Found')
-
                 notification = Notify()
-                message = f"Price: {product['price']} ({product['discount']}% )"
+                time = re.search("(\d\d:\d\d:\d\d)", product['dealEndDateTime']).group(1)
+                message = f"Price:  {product['price']} EUR \nDiscount: {product.get('discount','-')}% \nEnds: {time}"
                 notification.title = product['productName']
                 notification.message = message
 

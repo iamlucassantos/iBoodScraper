@@ -5,3 +5,4 @@ Smart
 Airpods
 Hikoki
 pure
+kapro
