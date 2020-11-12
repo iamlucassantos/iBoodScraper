@@ -6,7 +6,9 @@ Created on 12/11/2020
 
 from ibooddeals.helpers import WishList, Ibood
 import re
-import json
+from notifypy import Notify
+
+
 class HuntDeals(Ibood):
 
     def __init__(self, url=None):
@@ -22,7 +24,6 @@ class HuntDeals(Ibood):
                 data = pattern.search(json_data).group(1)
                 for line in data.splitlines():
                     if ':' in line:
-                        # print(line.strip().split(':'))
                         category, value, *_ = line.strip().split(':')
                         if value_strip:=re.search("'(.*?)'", value) :
                             value = value_strip.group(1)
@@ -38,13 +39,20 @@ class HuntDeals(Ibood):
         for item in wish_list:
             if item.lower() in product['productName'].lower() or item.lower() in product['offerName'].lower():
                 print('Found')
-            else:
-                print('Not Found')
+
+                notification = Notify()
+                message = f"Price: {product['price']} ({product['discount']}%)"
+                notification.title = product['productName']
+                notification.message = message
+
+                notification.send()
+
 
 
 def main():
     a =HuntDeals()
     a.find_product_match('wishlist.txt')
+
 
 
 if __name__ == "__main__":
