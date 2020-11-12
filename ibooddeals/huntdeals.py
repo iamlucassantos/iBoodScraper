@@ -46,9 +46,8 @@ class HuntDeals(Ibood):
                 message = f"Price:  {product['price']} EUR \nDiscount: {product.get('discount','-')}% \nEnds: {time}"
                 notification.title = product['productName']
                 notification.message = message
-                notification.send()
 
-        return product
+        return product, notification
 
     def add_to_history(self, product):
         """ Adds all products to a history csv file"""
@@ -80,9 +79,13 @@ class HuntDeals(Ibood):
 
 def main():
     RUNNING = True
+    prev_product = None
     while RUNNING is True:
         deal = HuntDeals()
-        product = deal.find_product_match('wishlist.txt')
+        product, notification = deal.find_product_match('wishlist.txt')
+        if product != prev_product:
+            notification.send()
+        prev_product = product
         deal.add_to_history(product)
         time.sleep(random.randint(15, 30))
 
