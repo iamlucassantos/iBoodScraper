@@ -11,6 +11,7 @@ import time
 import random
 import csv
 
+
 class HuntDeals(Ibood):
 
     def __init__(self, url=None):
@@ -19,6 +20,7 @@ class HuntDeals(Ibood):
     def get_product(self):
         """Returns a dictionary with all information about a product"""
         html = self.get_html()
+        product = None
         for script in html.find_all('script'):
             pattern = re.compile("product.push\(\s+(\{[\s\S]*),\s+\);\s+return product;")
             json_data = script.find(text=pattern)
@@ -36,14 +38,14 @@ class HuntDeals(Ibood):
     def find_product_match(self, wishlist_file=None):
         """If a match is found with the wishlist, a notification is created"""
         wish_list = WishList(wishlist_file).items
-
+        notification = None
         product = self.get_product()
         for item in wish_list:
             if item.lower() in product['productName'].lower() or item.lower() in product['offerName'].lower():
 
                 notification = Notify()
-                time = re.search("(\d\d:\d\d:\d\d)", product['dealEndDateTime']).group(1)
-                message = f"Price:  {product['price']} EUR \nDiscount: {product.get('discount','-')}% \nEnds: {time}"
+                timeend = re.search("(\d\d:\d\d:\d\d)", product['dealEndDateTime']).group(1)
+                message = f"Price:  {product['price']} EUR \nDiscount: {product.get('discount','-')}% \nEnds: {timeend}"
                 notification.title = product['productName']
                 notification.message = message
 
@@ -66,7 +68,7 @@ class HuntDeals(Ibood):
 
 
                 APPEND = True
-                for line in reader: # Only appends if product not in the csv file yet
+                for line in reader:  # Only appends if product not in the csv file yet
                     if line['productID'] == product['productID']:
                         APPEND = False
                         break
@@ -77,16 +79,18 @@ class HuntDeals(Ibood):
                         row_to_write[field] = product[field]
                     writer.writerow(row_to_write)
 
+
 def main():
     RUNNING = True
     prev_product = None
     while RUNNING is True:
         deal = HuntDeals()
         product, notification = deal.find_product_match('wishlist.txt')
-        if product != prev_product:
-            notification.send()
-        prev_product = product
-        deal.add_to_history(product)
+        if product:
+            if product != prev_product and notification:
+                notification.send()
+            prev_product = product
+            deal.add_to_history(product)
         time.sleep(random.randint(15, 30))
 
 
